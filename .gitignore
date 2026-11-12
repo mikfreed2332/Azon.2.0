@@ -1,0 +1,21 @@
+# Вирутальное окуржение
+.venv/
+venv/
+
+# Кэш Python
+__pycache__/
+*.py[cod]
+
+# Pytest
+.pytest_cache/
+
+# Персональные настройки IDE
+.idea/
+
+# Переменные окружения и секреты
+.env
+.env.*
+!.env.example
+
+# Логи
+*.log
