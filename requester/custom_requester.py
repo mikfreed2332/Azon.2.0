@@ -49,6 +49,7 @@ class CustomRequester:
                 safe_body = json.dumps(body)
             except json.JSONDecodeError:
                 pass
+
         return safe_body, safe_headers
 
     def _log_request_and_response(self, response):

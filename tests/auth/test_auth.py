@@ -9,13 +9,16 @@ class TestAuth:
         register_response = api_manager.auth_api.register_user(user_data)
         assert register_response.json()["role"] == "USER"
 
-        api_manager.auth_api.authenticate(UserData.login_data(user_data))
-        me_response = api_manager.auth_api.get_me()
+        api_manager.auth_api.authenticate((user_data["email"], user_data["password"]))
+
+        me_response = api_manager.user_api.get_user_info()
         assert me_response.json()["email"] == user_data["email"]
 
     def test_register_with_existing_email(self, api_manager, registered_user):
-        response = api_manager.auth_api.register_user(registered_user, expected_status=409)
+        user_data = UserData.registration_data()
+        user_data["email"] = registered_user["email"]
 
+        response = api_manager.auth_api.register_user(user_data, expected_status=409)
         assert response.json()["error"]["code"] == "EMAIL_EXISTS"
 
     def test_login_with_wrong_password(self, api_manager, registered_user):
@@ -23,10 +26,4 @@ class TestAuth:
         credentials["password"] = "definitely-wrong-password"
 
         response = api_manager.auth_api.login_user(credentials, expected_status=401)
-
         assert response.json()["error"]["code"] == "INVALID_CREDENTIALS"
-
-    def test_me_returns_profile(self, api_manager, authorized_user):
-        response = api_manager.auth_api.get_me()
-
-        assert response.json()["email"] == authorized_user["email"]

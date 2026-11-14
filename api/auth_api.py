@@ -22,8 +22,10 @@ class AuthAPI(CustomRequester):
             expected_status=expected_status
         )
 
-    def authenticate(self, credentials):
-        response = self.login_user(credentials)
+    def authenticate(self, user_creds):
+        email, password = user_creds
+        response = self.login_user({"email": email, "password": password})
         token = response.json()["access_token"]
-        self.update_session_headers(Authorization=f"Bearer {token}")
+        self._update_session_headers(Authorization=f"Bearer {token}")
         return response
+

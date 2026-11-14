@@ -5,7 +5,7 @@ from api.api_manager import ApiManager
 from data.users import UserData
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def api_manager():
     session = requests.Session()
     yield ApiManager(session)
@@ -14,11 +14,14 @@ def api_manager():
 @pytest.fixture()
 def registered_user(api_manager):
     user_data = UserData.registration_data()
-    api_manager.auth_api.register_user(user_data)
-    return user_data
+    response = api_manager.auth_api.register_user(user_data)
+    return {**user_data, "id": response.json()["id"]}
+
+@pytest.fixture(scope="function")
+def authenticated_user(api_manager):
+    user_data = UserData.registration_data()
+    register_response = api_manager.auth_api.register_user(user_data)
+    api_manager.auth_api.authenticate((user_data["email"], user_data["password"]))
+    return {**user_data, "id": register_response.json()["id"]}
 
 
-@pytest.fixture()
-def authorized_user(api_manager, registered_user):
-    api_manager.auth_api.authenticate(UserData.login_data(registered_user))
-    return registered_user
