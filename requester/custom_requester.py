@@ -1,7 +1,6 @@
 import logging
 import json
 
-
 DEFAULT_TIMEOUT = 10
 
 logger = logging.getLogger("azon_tests")
@@ -59,7 +58,7 @@ class CustomRequester:
             request.headers,
         )
 
-        logger.info("--> %s %s headers=%s",request.method, request.url, safe_headers)
+        logger.info("--> %s %s headers=%s", request.method, request.url, safe_headers)
         logger.info("    тело запроса: %s", safe_body)
         logger.info(
             "<-- %s за %.2f с: %s",
@@ -70,6 +69,3 @@ class CustomRequester:
 
     def get_health(self):
         return self.send_request("GET", "/health")
-
-
-
