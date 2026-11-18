@@ -1,21 +1,12 @@
-# Вирутальное окуржение
-.venv/
-venv/
-
-# Кэш Python
-__pycache__/
-*.py[cod]
-
-# Pytest
-.pytest_cache/
-
-# Персональные настройки IDE
 .idea/
-
-# Переменные окружения и секреты
-.env
-.env.*
-!.env.example
-
-# Логи
+.vscode/
+.venv/
+.DS_Store
+/venv/
+__pycache__/
+*.db
+*.xlsx
 *.log
+*.csv
+*.env
+.env

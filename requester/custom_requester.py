@@ -21,9 +21,10 @@ class CustomRequester:
         self._log_request_and_response(response)
 
         if response.status_code != expected_status:
+            safe_response_body, _ = self._mask_sensitive_data(response.text, {})
             raise AssertionError(
                 f"{method} {url}: ожидали статус {expected_status},"
-                f"получили {response.status_code}. Тело ответа: {response.text}"
+                f"получили {response.status_code}. Тело ответа: {safe_response_body}"
             )
         return response
 
@@ -42,8 +43,10 @@ class CustomRequester:
             try:
                 body = json.loads(body)
 
-                if isinstance(body, dict) and "password" in body:
-                    body["password"] = "***"
+                if isinstance(body, dict):
+                    for key in ("password", "invite_code", "access_token", "refresh_token"):
+                        if key in body:
+                            body[key] = "***"
 
                 safe_body = json.dumps(body)
             except json.JSONDecodeError:
@@ -53,6 +56,7 @@ class CustomRequester:
 
     def _log_request_and_response(self, response):
         request = response.request
+        safe_response_body, _ = self._mask_sensitive_data(response.text, {})
         safe_body, safe_headers = self._mask_sensitive_data(
             request.body,
             request.headers,
@@ -64,7 +68,7 @@ class CustomRequester:
             "<-- %s за %.2f с: %s",
             response.status_code,
             response.elapsed.total_seconds(),
-            response.text[:500],
+            safe_response_body[:500]
         )
 
     def get_health(self):

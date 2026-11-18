@@ -5,12 +5,15 @@ class UserData:
     """Object Mother для тел запроса Auth API."""
 
     @staticmethod
-    def registration_data() -> dict:
-        return {
+    def registration_data(invite_code: str = None) -> dict:
+        data = {
             "email": DataGenerator.generate_email(),
             "password": DataGenerator.generate_password(),
             "full_name": DataGenerator.generate_full_name(),
         }
+        if invite_code:
+            data["invite_code"] = invite_code
+        return data
 
     @staticmethod
     def login_data(user_data) -> dict:
@@ -21,5 +24,5 @@ class UserData:
         return {"full_name": DataGenerator.generate_full_name()}
 
     @staticmethod
-    def change_password_data(user_data, new_password)-> dict:
+    def change_password_data(user_data, new_password) -> dict:
         return {"old_password": user_data["password"], "new_password": new_password}
