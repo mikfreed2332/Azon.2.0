@@ -28,16 +28,28 @@ class TestProducts:
         response = api_manager.products_api.get_product(product_id)
         assert response.json()["id"] == product_id
 
-    def test_create_product(self, api_manager, authenticated_manager):
+    def test_create_product(self, api_manager, authenticated_manager, registered_admin):
         categories_list = api_manager.categories_api.get_categories().json()
         category_id = categories_list[0]["id"]
         new_product = DataGenerator.generate_product_data(category_id)
 
-        response = api_manager.products_api.create_product(new_product)
-        response_data = response.json()
-        assert "id" in response_data
-        assert response_data["sku"] == new_product["sku"]
-        assert response_data["category_id"] == category_id
+        created = None
+
+        try:
+            response = api_manager.products_api.create_product(new_product)
+            created = response.json()
+
+            assert "id" in created
+            assert created["sku"] == new_product["sku"]
+            assert created["category_id"] == category_id
+
+        finally:
+            if created and "id" in created:
+                api_manager.auth_api.authenticate((
+                    registered_admin["email"],
+                    registered_admin["password"]
+                ))
+                api_manager.products_api.delete_product(created["id"])
 
     def test_update_product(self, api_manager, created_product):
         update_data = {"name": "Updated product name"}
