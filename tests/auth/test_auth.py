@@ -3,7 +3,7 @@ from data.users import UserData
 
 class TestAuth:
 
-    def tests_register_and_login(self, api_manager):
+    def test_register_and_login(self, api_manager):
         user_data = UserData.registration_data()
 
         register_response = api_manager.auth_api.register_user(user_data)

@@ -1,6 +1,5 @@
-import uuid
-
 from decimal import Decimal
+from utils.data_generator import DataGenerator
 
 
 class TestProducts:
@@ -29,7 +28,49 @@ class TestProducts:
         response = api_manager.products_api.get_product(product_id)
         assert response.json()["id"] == product_id
 
-    def test_get_nonexistent_product(self, api_manager):
-        response = api_manager.products_api.get_product(uuid.uuid4(), expected_status=404)
+    def test_create_product(self, api_manager, authenticated_manager):
+        categories_list = api_manager.categories_api.get_categories().json()
+        category_id = categories_list[0]["id"]
+        new_product = DataGenerator.generate_product_data(category_id)
 
-        assert response.json()["error"]["code"] == "PRODUCT_NOT_FOUND"
+        response = api_manager.products_api.create_product(new_product)
+        response_data = response.json()
+        assert "id" in response_data
+        assert response_data["sku"] == new_product["sku"]
+        assert response_data["category_id"] == category_id
+
+    def test_update_product(self, api_manager, created_product):
+        update_data = {"name": "Updated product name"}
+
+        response = api_manager.products_api.update_product(
+            update_data, created_product["id"])
+
+        updated_product = response.json()
+
+        assert updated_product["id"] == created_product["id"]
+        assert updated_product["name"] == update_data["name"]
+
+    def test_update_price(self, api_manager, created_product, registered_admin):
+        new_price = 6999
+        api_manager.auth_api.authenticate((
+            registered_admin["email"],
+            registered_admin["password"]
+        ))
+        response = api_manager.products_api.update_price(created_product["id"], new_price)
+        updated_product = response.json()
+
+        assert updated_product["id"] == created_product["id"]
+        assert Decimal(updated_product["price"]) == Decimal(str(new_price))
+
+    def test_delete_product(self, api_manager, authenticated_admin):
+        categories_list = api_manager.categories_api.get_categories().json()
+        category_id = categories_list[0]["id"]
+        new_product = DataGenerator.generate_product_data(category_id)
+
+        response = api_manager.products_api.create_product(new_product)
+        created = response.json()
+        api_manager.products_api.delete_product(created["id"], )
+
+        response = api_manager.products_api.get_product(created["id"])
+
+        assert response.json()["is_available"] is False

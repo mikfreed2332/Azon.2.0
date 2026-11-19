@@ -1,10 +1,11 @@
 import pytest
 import requests
 
-from api import user_api
+
 from config.credentials import MANAGER_INVITE_CODE, ADMIN_INVITE_CODE
 from api.api_manager import ApiManager
 from data.users import UserData
+from utils.data_generator import DataGenerator
 
 
 @pytest.fixture(scope="function")
@@ -49,4 +50,57 @@ def authenticated_admin(api_manager, registered_admin):
     api_manager.auth_api.authenticate((registered_admin["email"],
                                        registered_admin["password"]))
     return registered_admin
+
+@pytest.fixture()
+def created_product(api_manager, authenticated_manager, registered_admin):
+    categories_list = api_manager.categories_api.get_categories().json()
+    category_id = categories_list[0]["id"]
+    new_product = DataGenerator.generate_product_data(category_id)
+
+
+    response = api_manager.products_api.create_product(new_product)
+    created = response.json()
+
+    yield created
+
+    api_manager.auth_api.authenticate((
+        registered_admin["email"],
+        registered_admin["password"]
+    ))
+    api_manager.products_api.delete_product(created["id"])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
